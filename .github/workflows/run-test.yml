@@ -14,6 +14,7 @@ jobs:
         env:
           VAR1: ${{ vars.VARIABLE_1 }}
         run: |
-          echo "$ENVIRONMENT"
+          echo "${{ github.event.inputs.environment }}"
           echo "Secret: ${{ secrets.SECRET_TEST_1 }}"
           echo "Var: ${{ vars.VARIABLE_1 }}"
+          echo "Var as env: ${{ env.VAR1 }}"

@@ -1,0 +1,19 @@
+name: run test
+
+on:
+  workflow_call:
+  workflow_dispatch:
+
+jobs:
+  echo-environment:
+    name:  Echo out env info from call
+    runs-on: ubuntu-20.04
+
+    steps:
+      - name: Echo environment
+        env:
+          VAR1: ${{ vars.VARIABLE_1 }}
+        run: |
+          echo "$ENVIRONMENT"
+          echo "Secret: ${{ secrets.SECRET_TEST_1 }}"
+          echo "Var: ${{ vars.VARIABLE_1 }}"

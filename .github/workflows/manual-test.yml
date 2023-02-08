@@ -1,0 +1,22 @@
+name: Manual Test
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        type: environment
+
+jobs:
+
+  echo-env:
+    name: Echo Env
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Echo env in caller
+        run:  |
+          echo "Environment is ${{ github.event.inputs.environment }}"
+          echo "Variable 1 is '${{ vars.VARIABLE_1 }}'"
+
+  run-test:
+    uses: ./.github/workflows/run-test.yml
+    secrets: inherit

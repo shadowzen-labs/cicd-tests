@@ -15,7 +15,7 @@ jobs:
       - name: Echo env in caller
         run:  |
           echo "Environment is ${{ github.event.inputs.environment }}"
-          echo "Variable 1 is '${{ vars.VARIABLE_1 }}'"
+          echo "Repo Variable 1 is ${{ vars.REPO_VARIABLE_1 }}"
 
   run-test:
     uses: ./.github/workflows/run-test.yml

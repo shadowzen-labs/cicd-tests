@@ -12,7 +12,7 @@ jobs:
     steps:
       - name: Echo environment
         env:
-          VAR1: ${{ vars.VARIABLE_1 }}
+          VAR1: ${{ vars.TEST_VARIABLE_1 }}
           FOO1: ${{ secrets.SECRET_TEST_1 }}
         run: |
 

@@ -15,7 +15,7 @@ jobs:
     steps:
       - name: Echo env in caller
         run:  |
-          echo "Environment is ${{ github_environment }}"
+          echo "Environment is STAGING"
           echo "Env Variable 1 is ${{ vars.TEST_VARIABLE_1 }}"
           echo "Repo Variable 1 is ${{ vars.REPO_VARIABLE_1 }}"
 

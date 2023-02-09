@@ -1,0 +1,28 @@
+name: Manual Test
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        type: environment
+
+jobs:
+
+  echo-env:
+    name: Echo Env
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Echo env in caller
+        run:  |
+          echo "Environment is ${{ github.event.inputs.environment }}"
+          echo "Env Variable 1 is ${{ vars.TEST_VARIABLE_1 }}"
+          echo "Repo Variable 1 is ${{ vars.REPO_VARIABLE_1 }}"
+
+  run-test:
+    uses: ./.github/workflows/run-test.yml
+    # Can't get https://github.com/orgs/community/discussions/25238#discussioncomment-4367677 to work
+    with:
+      #environment: ${{ github.event.inputs.environment }}
+      environment: STAGING
+    secrets: inherit
+    #environment: ${{ inputs.environment }}  # Environment cannot be called here, must be defined in called workflow.

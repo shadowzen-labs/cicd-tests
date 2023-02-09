@@ -2,6 +2,10 @@ name: run test
 
 on:
   workflow_call:
+    inputs:
+      environment:
+        required: true
+        type: string
   workflow_dispatch:
 
 # Try to make this default to STAGING environment if not defined from caller

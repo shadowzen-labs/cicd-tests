@@ -2,11 +2,17 @@ name: run test
 
 on:
   workflow_call:
+    # environment value here HAS to be defined in caller file using 'with:'
     inputs:
       environment:
         required: true
         type: string
   workflow_dispatch:
+    inputs:
+      environment:
+        description: Environment to run tests against
+        type: environment
+        required: true
 
 # Try to make this default to STAGING environment if not defined from caller
 jobs:

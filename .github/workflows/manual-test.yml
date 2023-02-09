@@ -21,4 +21,4 @@ jobs:
   run-test:
     uses: ./.github/workflows/run-test.yml
     secrets: inherit
-    #environment: ${{ github.event.inputs.environment }}
+    environment: ${{ inputs.environment }}

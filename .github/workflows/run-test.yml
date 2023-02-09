@@ -8,7 +8,7 @@ jobs:
   echo-environment:
     name:  Echo out env info from call
     runs-on: ubuntu-20.04
-    environment: ${{ inputs.environment }}
+    #environment: ${{ inputs.environment }}
 
     steps:
       - name: Echo environment
@@ -16,9 +16,8 @@ jobs:
           VAR1: ${{ vars.TEST_VARIABLE_1 }}
           FOO1: ${{ secrets.SECRET_TEST_1 }}
         run: |
-
           echo "${{ github.event.inputs.environment }}"
           echo "Secret: ${{ secrets.SECRET_TEST_1 }}"
           echo "Secret as env: ${{ env.FOO1 }}"
-          echo "Var: ${{ vars.VARIABLE_1 }}"
+          echo "Var: ${{ vars.TEST_VARIABLE_1 }}"
           echo "Var as env: ${{ env.VAR1 }}"

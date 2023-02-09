@@ -20,9 +20,9 @@ jobs:
 
   run-test:
     uses: ./.github/workflows/run-test.yml
+    # Can't get https://github.com/orgs/community/discussions/25238#discussioncomment-4367677 to work
     #with:
       #environment: ${{ github.event.inputs.environment }}
-    environment: STAGING
+      #environment: STAGING
     secrets: inherit
     #environment: ${{ inputs.environment }}  # Environment cannot be called here, must be defined in called workflow.
-    # try:

@@ -9,7 +9,7 @@ jobs:
   echo-environment:
     name:  Echo out env info from call
     runs-on: ubuntu-20.04
-    #environment: ${{ inputs.environment }}
+    environment: ${{ inputs.environment }}
 
     steps:
       - name: Echo environment

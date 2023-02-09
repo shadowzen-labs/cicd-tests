@@ -21,7 +21,8 @@ jobs:
   run-test:
     uses: ./.github/workflows/run-test.yml
     with:
-      environment: ${{ github.event.inputs.environment }}
+      #environment: ${{ github.event.inputs.environment }}
+      environment: STAGING
     secrets: inherit
     #environment: ${{ inputs.environment }}  # Environment cannot be called here, must be defined in called workflow.
     # try:

@@ -1,20 +1,21 @@
-name: Manual Test
+name: Manual Test with Static Env
 
 on:
   workflow_dispatch:
-    inputs:
-      environment:
-        type: environment
+#    inputs:
+#      environment:
+#        type: environment
 
 jobs:
 
   echo-env:
     name: Echo Env
     runs-on: ubuntu-20.04
+    environment:  STAGING
     steps:
       - name: Echo env in caller
         run:  |
-          echo "Environment is ${{ github.event.inputs.environment }}"
+          echo "Environment is ${{ github_environment }}"
           echo "Env Variable 1 is ${{ vars.TEST_VARIABLE_1 }}"
           echo "Repo Variable 1 is ${{ vars.REPO_VARIABLE_1 }}"
 

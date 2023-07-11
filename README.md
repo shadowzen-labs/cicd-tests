@@ -1,2 +1,2 @@
 # cicd-tests
-Private repo to do cicd tests using github actions
+Repo to do cicd tests using github actions

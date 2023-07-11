@@ -1,0 +1,46 @@
+name: Manual Test for Geting Branch Contexts
+
+on:
+  workflow_dispatch:
+    inputs:
+      selected_branch:
+        type: string
+        description: 'Branch to test'
+        default: 'main'
+        required: true
+
+jobs:
+
+  echo-env:
+    name: Echo Env
+    runs-on: ubuntu-22.04
+    environment:  STAGING
+    steps:
+      - name: Echo env in caller
+        run:  |
+          echo "Environment is STAGING"
+          echo "Env Variable 1 is ${{ vars.TEST_VARIABLE_1 }}"
+          echo "Repo Variable 1 is ${{ vars.REPO_VARIABLE_1 }}"
+
+  get-branch-contexts:
+    name:  Get Branch Contexts
+    runs-on: ubuntu-22.04
+    environment:  STAGING
+    steps:
+
+      - name:  Show branch reference before checkout
+        run:  |
+          echo "Branch reference before checkout is ${{ github.ref }}"
+          echo "From GITHUB_REF is ${GITHUB_REF#refs/heads/}"
+          echo "From ref_name is ${{ github.ref_name }}"
+
+      - name:  Checkout
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ inputs.selected_branch }}
+
+      - name:  Show branch reference after checkout
+        run:  |
+          echo "Branch reference after checkout is ${{ github.ref }}"
+          echo "From GITHUB_REF is ${GITHUB_REF#refs/heads/}"
+          echo "From ref_name is ${{ github.ref_name }}"

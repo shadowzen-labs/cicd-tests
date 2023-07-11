@@ -8,6 +8,9 @@ on:
         description: 'Branch to test'
         default: 'main'
         required: true
+  pull_request:
+    branches: [main, master]
+    types: [opened, synchronize, reopened]
 
 jobs:
 

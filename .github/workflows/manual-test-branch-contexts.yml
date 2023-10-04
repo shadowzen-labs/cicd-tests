@@ -33,6 +33,11 @@ jobs:
           echo "Branch reference before checkout is ${{ github.ref }}"
           echo "From GITHUB_REF is ${GITHUB_REF#refs/heads/}"
           echo "From ref_name is ${{ github.ref_name }}"
+          echo "GITHUB_WORKSPACE is $GITHUB_WORKSPACE"
+          echo "github.workspace is ${{ github.workspace }}"
+          echo "pwd is $(pwd)"
+          echo "PWD is $PWD"
+          echo -e "\n Listing current directory"\n$(ls -al)"
 
       - name:  Checkout
         uses: actions/checkout@v3
@@ -46,3 +51,8 @@ jobs:
           echo "From ref_name is ${{ github.ref_name }}"
           echo "From base_ref is ${{ github.base_ref }}"
           echo "From head_ref is ${{ github.head_ref }}"
+          echo "GITHUB_WORKSPACE is $GITHUB_WORKSPACE"
+          echo "github.workspace is ${{ github.workspace }}"
+          echo "pwd is $(pwd)"
+          echo "PWD is $PWD"
+          echo -e "\n Listing current directory"\n$(ls -al)"

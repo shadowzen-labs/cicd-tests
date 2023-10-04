@@ -1,4 +1,4 @@
-name: Manual Test for Getting Branch Contexts
+name: Manual example for Getting Branch Contexts
 
 on:
   workflow_dispatch:

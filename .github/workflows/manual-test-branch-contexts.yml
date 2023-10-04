@@ -39,7 +39,7 @@ jobs:
           echo "github.workspace is ${{ github.workspace }}"
           echo "pwd is $(pwd)"
           echo "PWD is $PWD"
-          echo -e "\n Listing current directory"\n$(ls -al)"
+          echo -e "\n Listing current directory\n$(ls -al)"
 
       - name:  Checkout
         uses: actions/checkout@v3
@@ -57,4 +57,4 @@ jobs:
           echo "github.workspace is ${{ github.workspace }}"
           echo "pwd is $(pwd)"
           echo "PWD is $PWD"
-          echo -e "\n Listing current directory"\n$(ls -al)"
+          echo -e "\n Listing current directory\n$(ls -al)"

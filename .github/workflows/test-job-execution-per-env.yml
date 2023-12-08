@@ -63,8 +63,8 @@ jobs:
     # we will skip this job if the prior job outputs run-remote-job==false
     if: ${{ needs.validate-environment.outputs.RUN_REMOTE_JOB == 'true' }} && ${{ inputs.run-remote-job == true }}
     #runs-on: ubuntu-22.04
-    #name: Execute Remote Job
-    #needs: validate-environment
+    name: Execute Remote Job
+    needs: validate-environment
     #environment: ${{ needs.validate-environment.outputs.alternate_environment }}
     #steps:
     #  - name: Execute Remote Job

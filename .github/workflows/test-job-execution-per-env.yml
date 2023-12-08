@@ -1,0 +1,75 @@
+name:  Job Exec Per Env
+# We want to determine if we should run a remote job based on two possibilities:
+# 1. The user has specified to run the remote job
+# 2. The user has specified an environment that requires the remote job to be run
+# Since the remote repo may not have the same environment names as the local repo,
+# we need to define the environment names of the remote repo environment names based on
+# the local repo environment names.
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to execute the job'
+        type: environment
+        required: true
+        default: 'DEV'
+      run-remote-job:
+        description: 'Run remote job?'
+        type: boolean
+        required: true
+        default: true
+
+jobs:
+
+  validate-environment:
+    runs-on: ubuntu-22.04
+    name: Validate Environment
+    environment: ${{ inputs.environment }}
+    outputs:
+      ALTERNATE_ENVIRONMENT: ${{ steps.set-alternate-environment.outputs.alternate_environment }}
+      RUN_REMOTE_JOB: ${{ steps.set-alternate-environment.outputs.run-remote-job }}
+    steps:
+      - name: Validate Environment
+        run: |
+          echo "Validating environment ${{ inputs.environment }}"
+
+      - name: Set Alternate Environment
+        id: set-alternate-environment
+        run: |
+          if [[ "${{ inputs.environment }}" == "DEV" ]]; then
+            ALT_ENV="devtest01"
+          elif [[ "${{ inputs.environment }}" == "STAGING" ]]; then
+            ALT_ENV="stage01"
+          elif [[ "${{ inputs.environment }}" == "PROD" ]]; then
+            ALT_ENV="prod01"
+            echo "::set-output run-remote-job::false"
+          else
+            echo "Remote environment not defined for ${{ inputs.environment }}"
+            echo "::set-output run-remote-job::false"
+          fi
+          echo "::set-output name=alternate_environment::$ALT_ENV"
+          echo "::set-output run-remote-job::true"
+
+
+
+  execute-remote-job:
+    if: ${{ needs.validate-environment.outputs.RUN_REMOTE_JOB == 'true' }} || ${{ inputs.run-remote-job == 'true' }}
+    runs-on: ubuntu-22.04
+    name: Execute Remote Job
+    needs: validate-environment
+    environment: ${{ needs.validate-environment.outputs.alternate_environment }}
+    steps:
+      - name: Execute Remote Job
+        run: |
+          echo "Executing remote job on environment ${{ needs.validate-environment.outputs.alternate_environment }}"
+
+  execute-local-job:
+    runs-on: ubuntu-22.04
+    name: Execute Local Job
+    needs: validate-environment
+    environment: ${{ inputs.environment }}
+    steps:
+      - name: Execute Local Job
+        run: |
+          echo "Executing local job on environment ${{ inputs.environment }}"

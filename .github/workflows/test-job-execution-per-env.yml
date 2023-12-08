@@ -63,7 +63,7 @@ jobs:
     # taking precedence meaning that even if the user checks the run-remote-job
     # we will skip this job if the prior job outputs run-remote-job==false
     #if: ${{ needs.validate-environment.outputs.RUN_REMOTE_JOB == 'true' }} && ${{ inputs.run-remote-job == true }}
-    if: ${{ inputs.run-remote-job == true }}
+    if: inputs.run-remote-job == true && needs.validate-environment.outputs.RUN_REMOTE_JOB == 'true'
     #runs-on: ubuntu-22.04
     name: Execute Remote Job
     needs: validate-environment

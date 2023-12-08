@@ -52,7 +52,9 @@ jobs:
           echo "run-remote-job==true" >> "$GITHUB_OUTPUT"
 
 
-
+  # An interesting note here is that we have a previously undefined environment and pass it
+  # to the environment parameter of the job this will create the environment in this repo.
+  # This can be useful for future jobs such as propagating a new environment to other repos.
   execute-remote-job:
     #if: ${{ needs.validate-environment.outputs.RUN_REMOTE_JOB == 'true' }} || ${{ inputs.run-remote-job == 'true' }}
     # We need this job skipped if user unchecks the run-remote-job checkbox OR
@@ -60,14 +62,17 @@ jobs:
     # taking precedence meaning that even if the user checks the run-remote-job
     # we will skip this job if the prior job outputs run-remote-job==false
     if: ${{ needs.validate-environment.outputs.RUN_REMOTE_JOB == 'true' }} && ${{ inputs.run-remote-job == 'true' }}
-    runs-on: ubuntu-22.04
-    name: Execute Remote Job
-    needs: validate-environment
-    environment: ${{ needs.validate-environment.outputs.alternate_environment }}
-    steps:
-      - name: Execute Remote Job
-        run: |
-          echo "Executing remote job on environment ${{ needs.validate-environment.outputs.alternate_environment }}"
+    #runs-on: ubuntu-22.04
+    #name: Execute Remote Job
+    #needs: validate-environment
+    #environment: ${{ needs.validate-environment.outputs.alternate_environment }}
+    #steps:
+    #  - name: Execute Remote Job
+    #    run: |
+    #      echo "Executing remote job on environment ${{ needs.validate-environment.outputs.alternate_environment }}"
+    uses: 'shadowzen-labs/remote-workflows/.github/workflows/run-test.yml@main'
+    with:
+      environment: ${{ needs.validate-environment.outputs.alternate_environment }}
 
   execute-local-job:
     runs-on: ubuntu-22.04

@@ -40,17 +40,19 @@ jobs:
         run: |
           if [[ "${{ inputs.environment }}" == "DEV" ]]; then
             ALT_ENV="devtest01"
+            echo "run-remote-job=true" >> "$GITHUB_OUTPUT"
+
           elif [[ "${{ inputs.environment }}" == "STAGING" ]]; then
             ALT_ENV="stage01"
+            echo "run-remote-job=true" >> "$GITHUB_OUTPUT"
           elif [[ "${{ inputs.environment }}" == "PROD" ]]; then
             ALT_ENV="prod01"
-            echo "run-remote-job==false" >> "$GITHUB_OUTPUT"
+            echo "run-remote-job=false" >> "$GITHUB_OUTPUT"
           else
             echo "Remote environment not defined for ${{ inputs.environment }}"
-            echo "run-remote-job==false" >> "$GITHUB_OUTPUT"
+            echo "run-remote-job=false" >> "$GITHUB_OUTPUT"
           fi
           echo "alternate_environment=$ALT_ENV" >> "$GITHUB_OUTPUT"
-          echo "run-remote-job==true" >> "$GITHUB_OUTPUT"
 
 
   # An interesting note here is that we have a previously undefined environment and pass it

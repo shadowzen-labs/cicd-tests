@@ -54,6 +54,15 @@ jobs:
           fi
           echo "alternate_environment=$ALT_ENV" >> "$GITHUB_OUTPUT"
 
+  verify-outputs:
+    runs-on: ubuntu-22.04
+    name: Verify Outputs
+    needs: validate-environment
+    steps:
+      - name: Verify Outputs
+        run: |
+          echo "Alternate Environment: ${{ needs.validate-environment.outputs.ALTERNATE_ENVIRONMENT }}"
+          echo "Run Remote Job: ${{ needs.validate-environment.outputs.RUN_REMOTE_JOB }}"
 
   # An interesting note here is that we have a previously undefined environment and pass it
   # to the environment parameter of the job this will create the environment in this repo.

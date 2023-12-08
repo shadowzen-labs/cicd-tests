@@ -43,13 +43,13 @@ jobs:
             ALT_ENV="stage01"
           elif [[ "${{ inputs.environment }}" == "PROD" ]]; then
             ALT_ENV="prod01"
-            echo "::set-output run-remote-job::false"
+            echo "run-remote-job==false" >> "$GITHUB_OUTPUT"
           else
             echo "Remote environment not defined for ${{ inputs.environment }}"
-            echo "::set-output run-remote-job::false"
+            echo "run-remote-job==false" >> "$GITHUB_OUTPUT"
           fi
-          echo "::set-output name=alternate_environment::$ALT_ENV"
-          echo "::set-output run-remote-job::true"
+          echo "alternate_environment=$ALT_ENV" >> "$GITHUB_OUTPUT"
+          echo "run-remote-job==true" >> "$GITHUB_OUTPUT"
 
 
 

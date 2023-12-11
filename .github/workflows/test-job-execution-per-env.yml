@@ -38,6 +38,7 @@ jobs:
               echo "Environment ${{ inputs.environment }} is valid"
           else
               echo "Environment ${{ inputs.environment }} is doesn't match pattern ^[a-z]{1,}[0-9]{2}$"
+              echo "Environment ${{ inputs.environment }} is invalid" >> "$GITHUB_STEP_SUMMARY"
               exit 1
           fi
 

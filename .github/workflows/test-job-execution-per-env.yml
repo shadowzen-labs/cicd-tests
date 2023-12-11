@@ -24,7 +24,7 @@ jobs:
 
   validate-environment:
     runs-on: ubuntu-22.04
-    name: Validate Environment
+    name: Validate Environment ${{ inputs.environment }}
     environment: ${{ inputs.environment }}
     outputs:
       ALTERNATE_ENVIRONMENT: ${{ steps.set-alternate-environment.outputs.alternate_environment }}

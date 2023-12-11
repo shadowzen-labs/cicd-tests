@@ -20,12 +20,6 @@ on:
         required: true
         default: true
 
-#permissions:
-#  issues: write
-#  id-token: write
-#  contents: write
-#  checks: write
-
 jobs:
 
   validate-environment:
@@ -87,22 +81,6 @@ jobs:
           echo "Alternate Environment: ${{ needs.validate-environment.outputs.ALTERNATE_ENVIRONMENT }}"
           echo "Run Remote Job output from prior job: ${{ needs.validate-environment.outputs.RUN_REMOTE_JOB }}"
 
-
-  manual-approval-job:
-    name: Manual Approval if prod01
-    if: inputs.environment == 'prod01'
-    runs-on: ubuntu-22.04
-    permissions:
-      issues: write
-    needs: validate-environment
-    steps:
-      - name: Manual approval
-        uses: trstringer/manual-approval@v1
-        with:
-          secret: ${{ github.TOKEN }}
-          approvers: shadowzen1978
-          minimum-approvals: 1
-
   # An interesting note here is that if we have a previously undefined environment and pass it
   # to the environment parameter of the job this will create the environment in this repo.
   # This can be useful for future jobs such as propagating a new environment to other repos.
@@ -112,12 +90,10 @@ jobs:
     # taking precedence meaning that even if the user checks the run-remote-job
     # we will skip this job if the prior job outputs run-remote-job==false
     if: |
-      always() && !failure() && !cancelled() &&
       inputs.run-remote-job == true && needs.validate-environment.outputs.RUN_REMOTE_JOB == 'true'
     name: Execute Remote Job
     needs:
       - validate-environment
-      - manual-approval-job
     uses: 'shadowzen-labs/remote-workflows/.github/workflows/run-test.yml@main'
     with:
       environment: ${{ needs.validate-environment.outputs.alternate_environment }}
@@ -127,11 +103,8 @@ jobs:
     name: Execute Local Job
     needs:
       - validate-environment
-      - manual-approval-job
       - execute-remote-job
-    if:  |
-      always() &&
-      !failure() && !cancelled()
+    if:  always() && !failure() && !cancelled()
     environment: ${{ inputs.environment }}
     steps:
       - name: Execute Local Job

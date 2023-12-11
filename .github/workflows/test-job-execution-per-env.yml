@@ -50,7 +50,7 @@ jobs:
 
           if [[ "${{ inputs.environment }}" == "devtest01" ]]; then
             #ALT_ENV="DEV"
-            set_alternate_environment("DEV")
+            set_alternate_environment('DEV')
           elif [[ "${{ inputs.environment }}" == "stage01" ]]; then
             ALT_ENV="STAGING"
             echo "run-remote-job=true" >> "$GITHUB_OUTPUT"

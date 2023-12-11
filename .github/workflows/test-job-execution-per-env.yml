@@ -33,43 +33,42 @@ jobs:
       - name: Validate Environment ${{ inputs.environment }}
         run: |
           echo "Validating environment ${{ inputs.environment }}"
-          echo "Input run-remote-job: ${{ inputs.run-remote-job }}"
+          echo "Input run-remote-job state: ${{ inputs.run-remote-job }}"
+          if [[ ${{ inputs.environment }} =~ ^[a-z]{1,}[0-9]{2}$ ]]; then
+              echo "Environment ${{ inputs.environment }} is valid"
+          else
+              echo "Environment ${{ inputs.environment }} is doesn't match pattern ^[a-z]{1,}[0-9]{2}$"
+              exit 1
+          fi
 
       - name: Set Alternate Environment
         id: set-alternate-environment
         run: |
           function skip_remote_job() {
-            echo "run-remote-job=false" >> "$GITHUB_OUTPUT"
-            echo "Skipping remote job for ${{ inputs.environment }}" >> "$GITHUB_STEP_SUMMARY"
+              echo "run-remote-job=false" >> "$GITHUB_OUTPUT"
+              echo "Skipping remote job for ${{ inputs.environment }}" >> "$GITHUB_STEP_SUMMARY"
           }
           function set_alternate_environment() {
-            echo "run-remote-job=true" >> "$GITHUB_OUTPUT"
-            echo "alternate_environment=$1" >> "$GITHUB_OUTPUT"
-            echo "Alternate Environment for ${{ inputs.environment }} is $1" >> "$GITHUB_STEP_SUMMARY"
+              echo "run-remote-job=true" >> "$GITHUB_OUTPUT"
+              echo "alternate_environment=$1" >> "$GITHUB_OUTPUT"
+              echo "Alternate Environment for ${{ inputs.environment }} is $1" >> "$GITHUB_STEP_SUMMARY"
           }
 
-          if [[ "${{ inputs.environment }}" == "devtest01" ]]; then
-            #ALT_ENV="DEV"
-            set_alternate_environment 'DEV'
-          elif [[ "${{ inputs.environment }}" == "stage01" ]]; then
-            ALT_ENV="STAGING"
-            echo "run-remote-job=true" >> "$GITHUB_OUTPUT"
-          elif [[ "${{ inputs.environment }}" == "prod01" ]]; then
-            ALT_ENV="PROD"
-            echo "run-remote-job=false" >> "$GITHUB_OUTPUT"
-            # set action summary message
-            echo "Skipping remote job for ${{ inputs.environment }}" >> "$GITHUB_STEP_SUMMARY"
-          # if env name has test in it as a substring and ends in a two digit number
+          if [[ "${{ inputs.environment }}" == dev* ]]; then
+              set_alternate_environment 'DEV'
+          elif [[ "${{ inputs.environment }}" == stage* ]]; then
+              set_alternate_environment 'STAGING'
+          elif [[ "${{ inputs.environment }}" == prod* ]]; then
+              set_alternate_environment 'PROD'
+          # if env name has 'test' in it as a substring and ends in a two digit number
           # matches: [petest01, testqa01, thisisatestexample01, test01]
           elif [[ "${{ inputs.environment }}" =~ .*test.*[0-9]{2}$ ]]; then
-            ALT_ENV="TESTING"
-            skip_remote_job
+              ALT_ENV="TESTING"
+              skip_remote_job
           else
-            echo "Remote environment not defined for ${{ inputs.environment }}"
-            echo "run-remote-job=false" >> "$GITHUB_OUTPUT"
-            skip_remote_job
+              echo "Remote environment not defined for ${{ inputs.environment }}"
+              skip_remote_job
           fi
-          #echo "alternate_environment=$ALT_ENV" >> "$GITHUB_OUTPUT"
 
   verify-outputs:
     runs-on: ubuntu-22.04

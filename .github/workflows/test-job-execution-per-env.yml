@@ -126,7 +126,9 @@ jobs:
     needs:
       - validate-environment
       - manual-approval-job
-      - execute-remote-job
+    if:  |
+      always() &&
+      !failure() && !cancelled()
     environment: ${{ inputs.environment }}
     steps:
       - name: Execute Local Job

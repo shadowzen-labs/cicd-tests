@@ -111,7 +111,9 @@ jobs:
     # if the prior job outputs run-remote-job==false with the prior job output
     # taking precedence meaning that even if the user checks the run-remote-job
     # we will skip this job if the prior job outputs run-remote-job==false
-    if: inputs.run-remote-job == true && needs.validate-environment.outputs.RUN_REMOTE_JOB == 'true'
+    if: |
+      always() && !failure() && !cancelled() &&
+      inputs.run-remote-job == true && needs.validate-environment.outputs.RUN_REMOTE_JOB == 'true'
     name: Execute Remote Job
     needs:
       - validate-environment

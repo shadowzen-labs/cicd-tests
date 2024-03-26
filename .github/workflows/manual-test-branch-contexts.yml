@@ -35,8 +35,8 @@ jobs:
           echo "From ref_name is ${{ github.ref_name }}"
           echo "From base_ref is ${{ github.base_ref }}"
           echo "From head_ref is ${{ github.head_ref }}"
-          COMMIT_HASH=$(git rev-parse --short=6 HEAD)
-          echo "Commit Hash is $COMMIT_HASH"
+          #COMMIT_HASH=$(git rev-parse --short=6 HEAD)
+          #echo "Commit Hash is $COMMIT_HASH"
           echo "GITHUB_WORKSPACE is $GITHUB_WORKSPACE"
           echo "github.workspace is ${{ github.workspace }}"
           echo "pwd is $(pwd)"

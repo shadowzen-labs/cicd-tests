@@ -32,8 +32,10 @@ jobs:
           echo "Environment: ${{ inputs.environment }}"
           echo "Run remote job: ${{ inputs.run-remote-job }}"
           echo "The following is a variable set at environment levels but not repo level."
-          echo "We are testing the behavior if the variable is defined at the environment level"
+          echo "We are testing the behavior if the variable is defined at the environment level."
           echo "but no var is defined at the repo level."
+          echo "TEST_VARIABLE_2: ${{ vars.TEST_VARIABLE_2 }}"
+          echo "The folliwing is a variable set at the repo level and some environment levels."
           echo "TEST_VARIABLE_1: ${{ vars.TEST_VARIABLE_1 }}"
 
   validate-environment:

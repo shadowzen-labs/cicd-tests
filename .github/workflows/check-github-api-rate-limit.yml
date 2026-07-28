@@ -1,0 +1,39 @@
+name: Check GitHub API Rate Limit
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  rate-limit:
+    name: Report GitHub API Rate Limit
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Report rate limit
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          rate_values="$(
+            gh api /rate_limit \
+              --jq '.resources.core | [.limit, .remaining, .reset, .used] | @tsv'
+          )"
+          IFS=$'\t' read -r limit remaining reset used <<<"${rate_values}"
+
+          reset_utc="$(date -u -d "@${reset}" '+%Y-%m-%d %H:%M:%S UTC')"
+
+          echo "Limit:     ${limit}"
+          echo "Used:      ${used}"
+          echo "Remaining: ${remaining}"
+          echo "Reset:     ${reset_utc} (${reset})"
+
+          {
+            echo "### GitHub API rate limit"
+            echo ""
+            echo "- Limit: ${limit}"
+            echo "- Used: ${used}"
+            echo "- Remaining: ${remaining}"
+            echo "- Reset: ${reset_utc} (${reset})"
+          } >>"${GITHUB_STEP_SUMMARY}"

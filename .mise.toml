@@ -1,0 +1,10 @@
+[tools]
+python = { version = "3.12", virtualenv = ".venv" }
+uv = "latest"
+
+[env]
+_.python.venv = { path = ".venv", create = true }
+
+[settings]
+experimental = true
+status = { missing_tools = "always", show_env = true, show_tools = true }

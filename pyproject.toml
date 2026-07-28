@@ -1,0 +1,14 @@
+[project]
+name = "cicd-tests"
+version = "0.1.0"
+description = "CI/CD tests using GitHub Actions"
+requires-python = ">=3.12"
+dependencies = [
+    "ghapi<2",
+]
+
+[dependency-groups]
+dev = [
+    "pylint>=3.3",
+    "ruff>=0.12",
+]

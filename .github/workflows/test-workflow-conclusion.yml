@@ -1,0 +1,130 @@
+name: Test - Workflow Conclusion
+
+on:
+  pull_request:
+    paths:
+      - .github/workflows/test-workflow-conclusion.yml
+      - .mise.toml
+      - pyproject.toml
+      - scripts/workflow_conclusion/**
+      - uv.lock
+  workflow_dispatch:
+    inputs:
+      outcome_1:
+        description: Outcome for simulated job 1
+        type: choice
+        default: success
+        options: [success, failure, skipped]
+      outcome_2:
+        description: Outcome for simulated job 2
+        type: choice
+        default: success
+        options: [success, failure, skipped]
+      outcome_3:
+        description: Outcome for simulated job 3
+        type: choice
+        default: success
+        options: [success, failure, skipped]
+      strict_success:
+        description: Run in STRICT_SUCCESS mode
+        type: boolean
+        default: false
+
+permissions:
+  actions: read
+  contents: read
+
+jobs:
+  sim-1:
+    name: sim-1 (${{ inputs.outcome_1 || 'success' }})
+    if: ${{ (inputs.outcome_1 || 'success') != 'skipped' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Simulate outcome
+        env:
+          OUTCOME: ${{ inputs.outcome_1 || 'success' }}
+        run: |
+          if [ "${OUTCOME}" = "failure" ]; then
+            echo "Simulating failure"
+            exit 1
+          fi
+          echo "Simulating success"
+
+  sim-2:
+    name: sim-2 (${{ inputs.outcome_2 || 'success' }})
+    if: ${{ (inputs.outcome_2 || 'success') != 'skipped' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Simulate outcome
+        env:
+          OUTCOME: ${{ inputs.outcome_2 || 'success' }}
+        run: |
+          if [ "${OUTCOME}" = "failure" ]; then
+            echo "Simulating failure"
+            exit 1
+          fi
+          echo "Simulating success"
+
+  sim-3:
+    name: sim-3 (${{ inputs.outcome_3 || 'success' }})
+    if: ${{ (inputs.outcome_3 || 'success') != 'skipped' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Simulate outcome
+        env:
+          OUTCOME: ${{ inputs.outcome_3 || 'success' }}
+        run: |
+          if [ "${OUTCOME}" = "failure" ]; then
+            echo "Simulating failure"
+            exit 1
+          fi
+          echo "Simulating success"
+
+  conclude:
+    name: conclude
+    needs: [sim-1, sim-2, sim-3]
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GITHUB_TOKEN: ${{ github.token }}
+      SCRIPT_DIR: scripts/workflow_conclusion
+      STRICT_SUCCESS: ${{ inputs.strict_success || false }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
+
+      - name: Install locked Python dependencies
+        run: uv sync --locked --no-dev
+
+      - name: gh CLI implementation (.sh)
+        id: sh
+        run: bash "${SCRIPT_DIR}/workflow_conclusion.sh"
+
+      - name: ghapi implementation (.py)
+        id: py
+        run: uv run --locked --no-dev "${SCRIPT_DIR}/workflow_conclusion.py"
+
+      - name: Compare and summarize
+        env:
+          PY_CONCLUSION: ${{ steps.py.outputs.conclusion }}
+          SH_CONCLUSION: ${{ steps.sh.outputs.conclusion }}
+        run: |
+          echo "gh CLI (.sh): ${SH_CONCLUSION}"
+          echo "ghapi  (.py): ${PY_CONCLUSION}"
+          {
+            echo "### Workflow conclusion test"
+            echo ""
+            echo "Requested: sim-1=${{ inputs.outcome_1 || 'success' }}, sim-2=${{ inputs.outcome_2 || 'success' }}, sim-3=${{ inputs.outcome_3 || 'success' }} (strict=${{ inputs.strict_success || false }})"
+            echo ""
+            echo "| implementation | conclusion |"
+            echo "| --- | --- |"
+            echo "| gh CLI (.sh) | ${SH_CONCLUSION} |"
+            echo "| ghapi (.py) | ${PY_CONCLUSION} |"
+          } >>"${GITHUB_STEP_SUMMARY}"
+          if [ "${SH_CONCLUSION}" != "${PY_CONCLUSION}" ]; then
+            echo "::error::implementations disagree: sh=${SH_CONCLUSION} py=${PY_CONCLUSION}"
+            exit 1
+          fi
+          echo "Both implementations agree: ${SH_CONCLUSION}"

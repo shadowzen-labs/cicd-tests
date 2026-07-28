@@ -4,6 +4,7 @@ import importlib.util
 import sys
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 SCRIPT_PATH = (
     Path(__file__).parents[1]
@@ -29,6 +30,31 @@ class FakeApi:
         self.calls.append((endpoint, method, kwargs))
         response, self.recv_hdrs = self.pages.pop(0)
         return response
+
+
+class GhApiCompatibilityTest(unittest.TestCase):
+    """Verify behavior relied upon from the pinned ghapi major version."""
+
+    def test_direct_call_forwards_per_request_timeout(self):
+        api = WORKFLOW_CONCLUSION.GhApi(
+            owner="owner",
+            repo="repo",
+            authenticate=False,
+        )
+        response_headers = {"Content-Type": "application/json"}
+
+        with patch(
+            "ghapi.core.urlsend",
+            return_value=(b'{"total_count": 0, "jobs": []}', response_headers),
+        ) as urlsend:
+            response = api(
+                "/repos/owner/repo/actions/runs/123/jobs",
+                "GET",
+                timeout=7.5,
+            )
+
+        self.assertEqual([], response["jobs"])
+        self.assertEqual(7.5, urlsend.call_args.kwargs["timeout"])
 
 
 class GetJobsTest(unittest.TestCase):

@@ -210,6 +210,8 @@ def fetch_jobs_page(api, request, page_number):
     """Request and validate one page of workflow jobs."""
     request_started_at = time.monotonic()
     try:
+        # Call GhApi.__call__ directly: ghapi 1.x forwards this method's
+        # per-request timeout to urlsend. Generated endpoint methods do not.
         response = api(
             request.endpoint,
             "GET",

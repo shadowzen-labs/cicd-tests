@@ -33,7 +33,7 @@ command -v gh >/dev/null 2>&1 || die "gh CLI not found on PATH."
 
 raw_conclusions="$(
     gh api --paginate \
-        "/repos/${repository}/actions/runs/${run_id}/jobs" \
+        "/repos/${repository}/actions/runs/${run_id}/jobs?filter=latest&per_page=100" \
         --jq '.jobs[].conclusion | select(. != null)'
 )" || die "gh api request failed for run ${run_id}."
 

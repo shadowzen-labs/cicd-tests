@@ -2,7 +2,7 @@
 """Resolve a workflow run's conclusion from its completed jobs.
 
 This is a drop-in replacement for technote-space/workflow-conclusion-action
-v3.0.3. Run it with ``uv run`` so the project's dependencies are available.
+v3.0.3. Run it with `uv run` so the project's dependencies are available.
 """
 
 import os
@@ -10,6 +10,7 @@ import sys
 import time
 from collections.abc import Sequence
 from dataclasses import dataclass
+from typing import NamedTuple
 
 from ghapi.all import GhApi
 
@@ -41,6 +42,15 @@ class JobsRequest:
     def endpoint(self):
         """Return the workflow jobs REST endpoint."""
         return f"/repos/{self.repository}/actions/runs/{self.run_id}/jobs"
+
+
+class JobsPage(NamedTuple):
+    """One fetched page of workflow jobs and its response metadata."""
+
+    response: dict
+    jobs: list
+    headers: dict
+    elapsed: float
 
 
 def main():
@@ -159,7 +169,26 @@ def fail(message):
 
 
 def get_jobs(api, request):
-    """Return all jobs, stopping when the API returns the final page."""
+    """Return every job for the run, paginating the jobs endpoint by hand.
+
+    Why not ghapi's paged() helper? paged() is
+    takewhile(noop, (oper(page=i) for i in 1..max_pages)) -- it keeps
+    requesting pages until one comes back falsy. That works for endpoints
+    that return a bare JSON array (an empty page is [], which is falsy),
+    but the Actions jobs endpoint wraps its results:
+    {"total_count": N, "jobs": [...]}. That object stays truthy even once
+    the jobs list is empty, so paged() never sees the end and walks all the
+    way to its default max_pages of 9999 -- thousands of requests that exhaust
+    the REST rate limit. We hit exactly this in CI. The same trap applies to
+    other wrapped list endpoints (artifacts, workflow_runs, ...).
+
+    So we paginate manually against the authoritative signal, the RFC 5988
+    Link header's rel="next", bound it with max_pages, and -- if the rate
+    limit runs out before we've fetched every page -- fail loudly instead of
+    returning a partial list. A truncated list is worse than an error here:
+    dropping the one failed job would flip the resolved conclusion from
+    failure to success.
+    """
     jobs = []
     started_at = time.monotonic()
 
@@ -169,34 +198,37 @@ def get_jobs(api, request):
             f"({len(jobs)} jobs collected so far)...",
             flush=True,
         )
-        response, page_jobs, response_headers, request_elapsed = fetch_jobs_page(
-            api,
-            request,
-            page_number,
-        )
-        jobs.extend(page_jobs)
+        page = fetch_jobs_page(api, request, page_number)
+        jobs.extend(page.jobs)
         total_elapsed = time.monotonic() - started_at
-        reported_total = response.get("total_count", "unknown")
+        reported_total = page.response.get("total_count", "unknown")
         print(
-            f"Received {len(page_jobs)} jobs from page {page_number} in "
-            f"{request_elapsed:.2f}s ({len(jobs)} collected, "
+            f"Received {len(page.jobs)} jobs from page {page_number} in "
+            f"{page.elapsed:.2f}s ({len(jobs)} collected, "
             f"reported total={reported_total}, total elapsed={total_elapsed:.2f}s, "
-            f"{format_rate_limit(response_headers)})",
+            f"{format_rate_limit(page.headers)})",
             flush=True,
         )
 
-        link_header = get_header(response_headers, "link")
+        link_header = get_header(page.headers, "link")
+        # Authoritative stop: a Link header that has no rel="next" is the last page.
         if link_header is not None and 'rel="next"' not in link_header:
             return jobs
+        # Fallback for when GitHub omits Link entirely (single-page responses
+        # carry no Link header): stop on a short page, or once we've collected
+        # the reported total. This is the check paged() lacks -- see docstring.
         if link_header is None and (
-            len(page_jobs) < JOBS_PER_PAGE
+            len(page.jobs) < JOBS_PER_PAGE
             or (isinstance(reported_total, int) and len(jobs) >= reported_total)
         ):
             return jobs
-        if get_header(response_headers, "x-ratelimit-remaining") == "0":
+        # We reach here only when another page is still required. If the budget
+        # is gone, fail loudly with the reset time rather than fall through and
+        # resolve a conclusion from a truncated job set.
+        if get_header(page.headers, "x-ratelimit-remaining") == "0":
             fail(
                 f"GitHub API rate limit exhausted after page {page_number}; "
-                f"another page is required. {format_rate_limit(response_headers)}"
+                f"another page is required. {format_rate_limit(page.headers)}"
             )
 
     return fail(
@@ -226,7 +258,6 @@ def fetch_jobs_page(api, request, page_number):
             },
             timeout=request.timeout,
         )
-    # pylint: disable-next=broad-exception-caught
     except Exception as error:  # noqa: BLE001 - retain API context in CI logs
         elapsed = time.monotonic() - request_started_at
         error_headers = getattr(error, "headers", {}) or {}
@@ -246,11 +277,11 @@ def fetch_jobs_page(api, request, page_number):
             f"GitHub API returned an invalid jobs payload for run "
             f"{request.run_id}, page {page_number}."
         )
-    return (
-        response,
-        list(page_jobs),
-        response_headers,
-        time.monotonic() - request_started_at,
+    return JobsPage(
+        response=response,
+        jobs=list(page_jobs),
+        headers=response_headers,
+        elapsed=time.monotonic() - request_started_at,
     )
 
 
